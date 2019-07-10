@@ -2481,18 +2481,19 @@ export class MathBackendCPU implements KernelBackend {
         effectiveInputSize[1] / effectiveOutputSize[1];
     for (let b = 0; b < batch; b++) {
       for (let r = 0; r < newHeight; r++) {
-        const sourceFracRow = effectiveRowSizeRatio * r;
-        const sourceRowFloor = Math.floor(sourceFracRow);
+        const sourceFracRow = effectiveRowSizeRatio * (r + 0.5) - 0.5;
+        const sourceRowFloor = Math.max(Math.floor(sourceFracRow),0.0);
         const rowFrac = sourceFracRow - sourceRowFloor;
         const sourceRowCeil = Math.min(oldHeight - 1, Math.ceil(sourceFracRow));
         const topRowOffset = b * x.strides[0] + sourceRowFloor * x.strides[1];
         const botRowOffset = b * x.strides[0] + sourceRowCeil * x.strides[1];
         for (let c = 0; c < newWidth; c++) {
-          const sourceFracCol = effectiveColSizeRatio * c;
-          const sourceColFloor = Math.floor(sourceFracCol);
+          const sourceFracCol = effectiveColSizeRatio * (c + 0.5) - 0.5 ;
+          const sourceColFloor = Math.max(Math.floor(sourceFracCol), 0.0);
           const colFrac = sourceFracCol - sourceColFloor;
           const sourceColCeil =
               Math.min(oldWidth - 1, Math.ceil(sourceFracCol));
+
           const topLeftOffest = topRowOffset + sourceColFloor * x.strides[2];
           const botLeftOffset = botRowOffset + sourceColFloor * x.strides[2];
           const topRightOffset = topRowOffset + +sourceColCeil * x.strides[2];
@@ -2509,7 +2510,6 @@ export class MathBackendCPU implements KernelBackend {
             const top = topLeft + (topRight - topLeft) * colFrac;
             const bottom = bottomLeft + (bottomRight - bottomLeft) * colFrac;
             const newValue = top + (bottom - top) * rowFrac;
-
             result[outputIdx++] = newValue;
           }
         }

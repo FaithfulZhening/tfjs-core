@@ -51,10 +51,10 @@ export class ResizeBilinearProgram implements GPGPUProgram {
         ivec2 yRC = coords.yz;
 
         // Fractional source index.
-        vec2 sourceFracIndexRC = vec2(yRC) * effectiveInputOverOutputRatioRC;
+        vec2 sourceFracIndexRC = (vec2(yRC) + 0.5) * effectiveInputOverOutputRatioRC - 0.5;
 
         // Compute the four integer indices.
-        ivec2 sourceFloorRC = ivec2(sourceFracIndexRC);
+        ivec2 sourceFloorRC = max(ivec2(sourceFracIndexRC),ivec2(0));
         ivec2 sourceCeilRC = ivec2(
           min(inputShapeRC - 1.0, ceil(sourceFracIndexRC)));
 
@@ -68,7 +68,7 @@ export class ResizeBilinearProgram implements GPGPUProgram {
         float top = topLeft + (topRight - topLeft) * fracRC.y;
         float bottom = bottomLeft + (bottomRight - bottomLeft) * fracRC.y;
         float newValue = top + (bottom - top) * fracRC.x;
-
+      
         setOutput(newValue);
       }
     `;
